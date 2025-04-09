@@ -10,4 +10,6 @@ matplotlib
 scipy
 pyyaml
 pandas
+-e ./yolo5
+
 
