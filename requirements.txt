@@ -4,7 +4,6 @@ torchvision
 firebase-admin
 opencv-python-headless
 uvicorn
-git+https://github.com/ultralytics/yolov5.git
 numpy
 Pillow
 matplotlib
