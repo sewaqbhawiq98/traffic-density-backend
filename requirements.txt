@@ -9,3 +9,5 @@ Pillow
 matplotlib
 scipy
 pyyaml
+pandas
+
