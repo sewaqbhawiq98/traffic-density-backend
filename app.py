@@ -10,7 +10,9 @@ import os
 # Setup path for yolov5 local model
 sys.path.append("./yolo5")
 sys.path.append(os.path.join(os.getcwd(), 'yolov5'))
-from models.common import DetectMultiBackend
+from models.common import DetectMultiBackend  # ← Keep this
+# Only if DetectMultiBackend is inside yolo5/models/common.py
+
 from yolov5.utils.augmentations import letterbox  # Updated import for letterbox
 
 app = Flask(__name__)
