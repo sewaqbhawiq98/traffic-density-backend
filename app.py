@@ -6,7 +6,9 @@ from firebase_admin import firestore, initialize_app, credentials
 import sys
 import os
 
+
 # Setup path for yolov5 local model
+sys.path.append("./yolo5")
 sys.path.append(os.path.join(os.getcwd(), 'yolov5'))
 from models.common import DetectMultiBackend
 from yolov5.utils.augmentations import letterbox  # Updated import for letterbox
