@@ -3,3 +3,4 @@ torch
 torchvision
 firebase-admin
 opencv-python-headless
+uvicorn
