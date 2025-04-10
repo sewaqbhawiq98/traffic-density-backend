@@ -6,7 +6,7 @@ from firebase_admin import firestore, initialize_app, credentials
 import urllib.request
 import os
 import sys
-
+import gdown  
 # Setup path for yolov5 local model
 sys.path.append("./yolo5")
 sys.path.append(os.path.join(os.getcwd(), 'yolo5'))
@@ -19,6 +19,14 @@ app = Flask(__name__)
 cred = credentials.Certificate("firebase-service-account.json")
 initialize_app(cred)
 db = firestore.client()
+
+
+# Download the model if it doesn't exist
+model_url = 'https://drive.google.com/uc?id=1vaBqb6GuGOL9uOpAG7JTRr0UQboSePUB'  # your real file ID
+model_path = 'best.pt'
+
+if not os.path.exists(model_path):
+    gdown.download(model_url, model_path, quiet=False)
 
 # Download best.pt from Google Drive if not present
 weights_dir = os.path.join(os.getcwd(), "weights")
