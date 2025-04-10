@@ -11,5 +11,5 @@ scipy
 pyyaml
 pandas
 -e ./yolo5
-
+ultralytics
 
