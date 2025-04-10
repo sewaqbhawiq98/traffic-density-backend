@@ -13,5 +13,6 @@ pandas
 -e ./yolo5
 ultralytics
 requests
+fastapi
 
 
