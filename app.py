@@ -3,15 +3,14 @@ import torch
 import cv2
 import numpy as np
 from firebase_admin import firestore, initialize_app, credentials
-import sys
+import urllib.request
 import os
-
+import sys
 
 # Setup path for yolov5 local model
 sys.path.append("./yolo5")
 sys.path.append(os.path.join(os.getcwd(), 'yolo5'))
 from yolo5.models.common import DetectMultiBackend
-
 from yolo5.utils.augmentations import letterbox  # Updated import for letterbox
 
 app = Flask(__name__)
@@ -21,8 +20,25 @@ cred = credentials.Certificate("firebase-service-account.json")
 initialize_app(cred)
 db = firestore.client()
 
+# Download best.pt from Google Drive if not present
+weights_dir = os.path.join(os.getcwd(), "weights")
+os.makedirs(weights_dir, exist_ok=True)
+model_path = os.path.join(weights_dir, "best.pt")
+
+# Replace this with your actual Google Drive file ID
+file_id = "1vaBqb6GuGOL9uOpAG7JTRr0UQboSePUB"
+download_url = f"https://drive.google.com/uc?export=download&id={file_id}"
+
+if not os.path.exists(model_path):
+    print("Downloading best.pt from Google Drive...")
+    try:
+        urllib.request.urlretrieve(download_url, model_path)
+        print("Download complete.")
+    except Exception as e:
+        print(f"Error downloading model weights: {e}")
+        raise
+
 # Load YOLOv5 model
-model_path = 'best.pt'
 device = 'cpu'
 model = DetectMultiBackend(model_path, device=device)
 model.eval()
