@@ -3,15 +3,15 @@ import torch
 import cv2
 import numpy as np
 from firebase_admin import firestore, initialize_app, credentials
-import urllib.request
 import os
 import sys
-import gdown  
-# Setup path for yolov5 local model
+import requests
+
+# Setup path for YOLOv5 local model
 sys.path.append("./yolo5")
 sys.path.append(os.path.join(os.getcwd(), 'yolo5'))
 from yolo5.models.common import DetectMultiBackend
-from yolo5.utils.augmentations import letterbox  # Updated import for letterbox
+from yolo5.utils.augmentations import letterbox
 
 app = Flask(__name__)
 
@@ -20,30 +20,24 @@ cred = credentials.Certificate("firebase-service-account.json")
 initialize_app(cred)
 db = firestore.client()
 
-
-# Download the model if it doesn't exist
-model_url = 'https://drive.google.com/uc?id=1vaBqb6GuGOL9uOpAG7JTRr0UQboSePUB'  # your real file ID
-model_path = 'best.pt'
-
-if not os.path.exists(model_path):
-    gdown.download(model_url, model_path, quiet=False)
-
-# Download best.pt from Google Drive if not present
+# Ensure weights directory exists
 weights_dir = os.path.join(os.getcwd(), "weights")
 os.makedirs(weights_dir, exist_ok=True)
 model_path = os.path.join(weights_dir, "best.pt")
 
-# Replace this with your actual Google Drive file ID
-file_id = "1vaBqb6GuGOL9uOpAG7JTRr0UQboSePUB"
-download_url = f"https://drive.google.com/uc?export=download&id={file_id}"
+# ✅ Direct download link from GoFile.io
+download_url = "https://store1.gofile.io/download/M6Gq9z/best.pt"
 
+# Download best.pt if not present
 if not os.path.exists(model_path):
-    print("Downloading best.pt from Google Drive...")
+    print("Downloading best.pt from GoFile.io...")
     try:
-        urllib.request.urlretrieve(download_url, model_path)
+        r = requests.get(download_url)
+        with open(model_path, 'wb') as f:
+            f.write(r.content)
         print("Download complete.")
     except Exception as e:
-        print(f"Error downloading model weights: {e}")
+        print(f"Error downloading model: {e}")
         raise
 
 # Load YOLOv5 model
@@ -73,7 +67,6 @@ def detect():
         if not ret:
             break
 
-        # Preprocess the frame
         img = letterbox(frame, new_shape=(640, 640))[0]
         img = img.transpose((2, 0, 1))  # HWC to CHW
         img = np.ascontiguousarray(img)
@@ -81,7 +74,6 @@ def detect():
         if img.ndimension() == 3:
             img = img.unsqueeze(0)
 
-        # Run YOLO detection
         results = model(img)
         pred = results[0]
 
@@ -92,12 +84,11 @@ def detect():
 
     cap.release()
 
-    # Save to Firestore
     camera_id = request.form.get('cameraId', '1')
     db.collection('Camera').document(camera_id).set(vehicle_counts, merge=True)
 
     return jsonify({"message": "Detection complete", "vehicleCounts": vehicle_counts})
 
 if __name__ == "__main__":
-  port = int(os.environ.get('PORT', 5000))  # Default to 5000 if PORT isn't set
-app.run(host='0.0.0.0', port=port)
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port)
