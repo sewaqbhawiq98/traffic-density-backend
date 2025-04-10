@@ -9,7 +9,7 @@ import os
 
 # Setup path for yolov5 local model
 sys.path.append("./yolo5")
-sys.path.append(os.path.join(os.getcwd(), 'yolov5'))
+sys.path.append(os.path.join(os.getcwd(), 'yolo5'))
 from models.common import DetectMultiBackend  # ← Keep this
 # Only if DetectMultiBackend is inside yolo5/models/common.py
 
