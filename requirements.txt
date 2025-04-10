@@ -10,7 +10,7 @@ matplotlib
 scipy
 pyyaml
 pandas
--e ./yolo5
+git+https://github.com/ultralytics/yolov5.git
 ultralytics
 requests
 fastapi
