@@ -91,4 +91,5 @@ def detect():
     return jsonify({"message": "Detection complete", "vehicleCounts": vehicle_counts})
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=10000)
+  port = int(os.environ.get('PORT', 5000))  # Default to 5000 if PORT isn't set
+app.run(host='0.0.0.0', port=port)
