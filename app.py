@@ -8,6 +8,9 @@ import cv2
 import numpy as np
 from io import BytesIO
 from PIL import Image
+import sys
+sys.path.insert(0, './yolov5')
+from models.common import DetectMultiBackend  # or similar
 
 app = FastAPI()
 
