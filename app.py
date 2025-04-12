@@ -6,7 +6,7 @@ from PIL import Image
 
 app = Flask(__name__)
 
-MODEL_URL = "https://huggingface.co/mann123/yolo-traffic/resolve/main/best.pt"
+MODEL_URL = "https://huggingface.co/Ramsyam/yolo-traffic-detection/resolve/main/best.pt"
 MODEL_PATH = "best.pt"
 
 def download_model():
