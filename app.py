@@ -6,28 +6,12 @@ from PIL import Image
 
 app = Flask(__name__)
 
-# Google Drive File Info
-FILE_ID = '1vaBqb6GuGOL9uOpAG7JTRr0UQboSePUB'
-MODEL_PATH = 'best.pt'
-
-def download_file_from_google_drive(file_id, destination):
-    def get_confirm_token(response):
-        for key, value in response.cookies.items():
-            if key.startswith('download_warning'):
-                return value
-        return None
-
-    def save_response_content(response, destination):
-        CHUNK_SIZE = 32768
-        with open(destination, "wb") as f:
-            for chunk in response.iter_content(CHUNK_SIZE):
-                if chunk:
-                    f.write(chunk)
-
+# Google Drive download for large file (>100MB) using session & confirm token
+def download_from_google_drive(file_id, destination):
     print("📥 Downloading model from Google Drive...")
     URL = "https://docs.google.com/uc?export=download"
+
     session = requests.Session()
-    
     response = session.get(URL, params={'id': file_id}, stream=True)
     token = get_confirm_token(response)
 
@@ -38,16 +22,33 @@ def download_file_from_google_drive(file_id, destination):
     save_response_content(response, destination)
     print("✅ Model downloaded successfully.")
 
-# Download model if not exists
-if not os.path.exists(MODEL_PATH):
-    download_file_from_google_drive(FILE_ID, MODEL_PATH)
+def get_confirm_token(response):
+    for key, value in response.cookies.items():
+        if key.startswith('download_warning'):
+            return value
+    return None
 
-# Load YOLO model
+def save_response_content(response, destination):
+    CHUNK_SIZE = 32768
+    with open(destination, "wb") as f:
+        for chunk in response.iter_content(CHUNK_SIZE):
+            if chunk:
+                f.write(chunk)
+
+# MODEL SETUP
+MODEL_ID = "1vaBqb6GuGOL9uOpAG7JTRr0UQboSePUB"  # your file ID
+MODEL_PATH = "best.pt"
+
+# Download model if not present
+if not os.path.exists(MODEL_PATH):
+    download_from_google_drive(MODEL_ID, MODEL_PATH)
+
+# Load YOLOv5 model
 model = torch.hub.load('ultralytics/yolov5', 'custom', path=MODEL_PATH, force_reload=True)
 
 @app.route('/')
 def home():
-    return '✅ YOLO Traffic Detection API is running!'
+    return '🚦 YOLO Traffic Detection API is Running!'
 
 @app.route('/detect', methods=['POST'])
 def detect():
@@ -62,4 +63,5 @@ def detect():
     return jsonify(detections)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    port = int(os.environ.get("PORT", 5000))  # 5000 for local; $PORT for Render
+    app.run(host='0.0.0.0', port=port)
