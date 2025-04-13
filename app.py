@@ -21,11 +21,13 @@ def download_model():
 
 # Download and load model
 download_model()
-model = torch.hub.load('ultralytics/yolov5', 'custom', path=MODEL_PATH, force_reload=True)
+
+# Load the YOLOv5 model (custom weights)
+model = torch.hub.load('ultralytics/yolov5', 'custom', path=MODEL_PATH, trust_repo=True)
 
 @app.route('/')
 def home():
-    return 'YOLO Traffic Detection API is running!'
+    return '✅ YOLO Traffic Detection API is running!'
 
 @app.route('/detect', methods=['POST'])
 def detect():
@@ -40,4 +42,5 @@ def detect():
     return jsonify(detections)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host='0.0.0.0', port=port)
