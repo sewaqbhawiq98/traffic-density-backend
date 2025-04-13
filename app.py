@@ -6,24 +6,44 @@ from PIL import Image
 
 app = Flask(__name__)
 
-MODEL_URL = "https://huggingface.co/Ramsyam/yolo-traffic-detection/resolve/main/best.pt"
-MODEL_PATH = "best.pt"
+# Google Drive File Info
+FILE_ID = '1vaBqb6GuGOL9uOpAG7JTRr0UQboSePUB'
+MODEL_PATH = 'best.pt'
 
-def download_model():
-    if not os.path.exists(MODEL_PATH):
-        print("📥 Downloading model from Hugging Face...")
-        with requests.get(MODEL_URL, stream=True) as r:
-            r.raise_for_status()
-            with open(MODEL_PATH, 'wb') as f:
-                for chunk in r.iter_content(chunk_size=8192):
+def download_file_from_google_drive(file_id, destination):
+    def get_confirm_token(response):
+        for key, value in response.cookies.items():
+            if key.startswith('download_warning'):
+                return value
+        return None
+
+    def save_response_content(response, destination):
+        CHUNK_SIZE = 32768
+        with open(destination, "wb") as f:
+            for chunk in response.iter_content(CHUNK_SIZE):
+                if chunk:
                     f.write(chunk)
-        print("✅ Model downloaded successfully.")
 
-# Download and load model
-download_model()
+    print("📥 Downloading model from Google Drive...")
+    URL = "https://docs.google.com/uc?export=download"
+    session = requests.Session()
+    
+    response = session.get(URL, params={'id': file_id}, stream=True)
+    token = get_confirm_token(response)
 
-# Load the YOLOv5 model (custom weights)
-model = torch.hub.load('ultralytics/yolov5', 'custom', path=MODEL_PATH, trust_repo=True)
+    if token:
+        params = {'id': file_id, 'confirm': token}
+        response = session.get(URL, params=params, stream=True)
+
+    save_response_content(response, destination)
+    print("✅ Model downloaded successfully.")
+
+# Download model if not exists
+if not os.path.exists(MODEL_PATH):
+    download_file_from_google_drive(FILE_ID, MODEL_PATH)
+
+# Load YOLO model
+model = torch.hub.load('ultralytics/yolov5', 'custom', path=MODEL_PATH, force_reload=True)
 
 @app.route('/')
 def home():
@@ -42,5 +62,4 @@ def detect():
     return jsonify(detections)
 
 if __name__ == '__main__':
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host='0.0.0.0', port=port)
+    app.run(debug=True)
